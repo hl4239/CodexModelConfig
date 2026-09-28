@@ -1,0 +1,56 @@
+{
+  "name": "codex-model-manager",
+  "version": "1.0.0",
+  "private": true,
+  "main": "desktop/main.mjs",
+  "type": "module",
+  "description": "Local Codex model catalog manager",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "electron .",
+    "dev:web": "node server.mjs --open",
+    "test": "node --test test/*.test.mjs",
+    "verify:cli": "node scripts/verify-cli.mjs",
+    "verify:desktop": "node scripts/verify-desktop.mjs",
+    "setup:electron": "node node_modules/electron/install.js",
+    "build": "electron-builder --win portable --x64",
+    "build:dir": "electron-builder --win --x64 --dir"
+  },
+  "author": "CodexModelConfig",
+  "license": "UNLICENSED",
+  "build": {
+    "appId": "local.codex.modelmanager",
+    "productName": "Codex Model Manager",
+    "directories": {
+      "output": "release",
+      "buildResources": "desktop/assets"
+    },
+    "files": [
+      "desktop/**/*",
+      "public/**/*",
+      "lib/**/*",
+      "server.mjs",
+      "package.json",
+      "README.md"
+    ],
+    "asar": true,
+    "electronDist": "node_modules/electron/dist",
+    "win": {
+      "target": [
+        "portable"
+      ],
+      "icon": "desktop/assets/icon.ico",
+      "signAndEditExecutable": true
+    },
+    "portable": {
+      "artifactName": "CodexModelConfig-${version}-win-x64.exe"
+    }
+  },
+  "devDependencies": {
+    "electron": "44.4.5",
+    "electron-builder": "26.15.3",
+    "playwright-core": "1.63.0"
+  }
+}

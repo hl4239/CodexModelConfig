@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#263f35">
+  <title>Codex · 模型管理器</title>
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" type="module"></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="/"><img src="/icon.svg" alt="" width="38" height="38"><span>Codex<span class="brand-sub">MODEL MANAGER</span></span></a>
+    <div class="workspace-label">工作空间 <span>LOCAL</span></div>
+    <nav aria-label="主导航">
+      <button data-view="official" class="nav-item active"><span data-icon="grid"></span>官方模型<span id="nav-official-count" class="nav-count">—</span></button>
+      <button data-view="custom" class="nav-item"><span data-icon="sliders"></span>自定义模型<span id="nav-custom-count" class="nav-count">0</span></button>
+      <button data-view="preview" class="nav-item"><span data-icon="layers"></span>合并预览</button>
+      <div class="nav-divider"></div>
+      <button data-view="settings" class="nav-item"><span data-icon="settings"></span>工具设置</button>
+    </nav>
+    <div class="sidebar-note"><span class="status-dot"></span>仅在本机运行<p>让模型目录，<br>按你的方式生长。</p></div>
+    <div class="sidebar-footer">独立本地工具 <span>v1.0</span></div>
+  </aside>
+
+  <main>
+    <header class="topbar"><div class="breadcrumb">工作空间 <span>/</span> <strong id="breadcrumb">官方模型</strong></div><span class="local-chip"><span class="status-dot"></span>127.0.0.1 · 本地连接</span></header>
+    <div class="page">
+      <div class="page-heading"><div><div class="eyebrow">YOUR MODELS, IN ONE PLACE</div><h1 id="page-title">模型目录</h1><p id="page-description">保留官方能力，为你的工作流添加更多选择。</p></div><div class="heading-actions"><button id="refresh-btn" class="button"><span data-icon="refresh"></span>刷新官方目录</button><button id="new-btn" class="button primary"><span data-icon="plus"></span>添加自定义模型</button></div></div>
+      <div id="global-errors" role="alert"></div>
+      <div id="loading" class="loading-panel"><span class="spinner"></span>正在连接本地模型管理器…</div>
+      <div id="app-content" hidden>
+        <section class="stats" aria-label="目录概览">
+          <article class="stat"><div class="stat-caption">官方模型 <span data-icon="grid"></span></div><div class="stat-value" id="official-count">—</div><div class="stat-foot" id="official-foot">随当前 Codex 版本读取</div></article>
+          <article class="stat"><div class="stat-caption">自定义模型 <span data-icon="sliders"></span></div><div class="stat-value" id="custom-count">0</div><div class="stat-foot" id="custom-foot">独立维护，增量合并</div></article>
+          <article class="stat stat-accent"><div class="stat-caption">合并后的目录 <span data-icon="layers"></span></div><div class="stat-value" id="merged-count">—</div><div class="stat-foot" id="merged-foot">准备就绪后应用到 Codex</div></article>
+        </section>
+        <div class="workspace-grid">
+          <section id="view-content" class="view-content" aria-live="polite"></section>
+          <aside class="context-panel">
+            <section class="panel apply-panel"><div class="panel-kicker">CODEX CONNECTION</div><h2>目录应用</h2><div id="apply-status" class="application-status"></div><p id="apply-description" class="muted"></p><dl class="connection-details"><dt>当前 Provider</dt><dd id="provider">—</dd><dt>配置文件</dt><dd id="config-path" class="path-text"></dd><dt>合并目录</dt><dd id="merged-path" class="path-text"></dd></dl><button id="apply-btn" class="button primary full"><span data-icon="check"></span>应用到 Codex</button><button id="restore-btn" class="button text-button full" hidden>恢复原目录设置</button><p class="apply-tip">应用时自动备份配置。完成后重启 Codex，加载新的模型目录。</p><div id="last-applied" class="last-applied"></div></section>
+            <section class="workflow"><h3>从官方目录，到你的目录</h3><ol><li><span>01</span><div>读取官方目录<p>来自本机 Codex 内置模型</p></div></li><li><span>02</span><div>叠加自定义配置<p>继承模板，仅保存修改字段</p></div></li><li><span>03</span><div>合并并应用<p>完整保留官方模型元数据</p></div></li></ol><a href="https://developers.openai.com/codex/config-reference/" target="_blank" rel="noreferrer">查看官方配置说明 <span aria-hidden="true">↗</span></a></section>
+          </aside>
+        </div>
+        <footer class="page-footer"><span>目录来源：<code>codex debug models --bundled</code></span><span id="sync-time"></span></footer>
+      </div>
+    </div>
+  </main>
+
+  <dialog id="editor-dialog" class="editor-dialog" aria-labelledby="editor-title">
+    <div class="dialog-header"><div><div class="eyebrow">CUSTOM MODEL</div><h2 id="editor-title">添加自定义模型</h2></div><button id="editor-close" class="icon-button" aria-label="关闭编辑器"><span data-icon="close"></span></button></div>
+    <form id="editor-form">
+      <div class="dialog-body">
+        <div class="form-grid"><label><span>模型 ID <span class="required">*</span></span><input id="edit-slug" required maxlength="256" placeholder="例如 my-custom-model" autocomplete="off"><small>填写你的接口实际接受的模型 ID。</small></label><label><span>官方模板 <span class="required">*</span></span><select id="edit-base" required></select><small>未覆盖的参数随官方模板更新。</small></label></div>
+        <div class="editor-section-heading"><h3>模型参数</h3><span>留空表示继承模板</span></div>
+        <div class="form-grid">
+          <label>显示名称<input id="edit-name" data-field="display_name" autocomplete="off"></label>
+          <label>默认推理档位<select id="edit-reasoning" data-field="default_reasoning_level"></select></label>
+          <label class="span-2">说明<input id="edit-description" data-field="description" autocomplete="off"></label>
+          <label>上下文窗口<input id="edit-context" data-field="context_window" type="number" min="1" step="1"></label>
+          <label>最大上下文窗口<input id="edit-max-context" data-field="max_context_window" type="number" min="1" step="1"></label>
+          <label>有效上下文比例 (%)<input id="edit-percent" data-field="effective_context_window_percent" type="number" min="1" max="100" step="1"></label>
+          <label>排序优先值<input id="edit-priority" data-field="priority" type="number" step="1"><small>数值较小的模型排在前面。</small></label>
+          <label>菜单可见性<select id="edit-visibility" data-field="visibility"><option value="">继承模板</option><option value="list">显示</option><option value="hide">隐藏</option></select></label>
+          <label>API 模式可用<select id="edit-api" data-field="supported_in_api" data-type="boolean"><option value="">继承模板</option><option value="true">是</option><option value="false">否</option></select></label>
+          <label class="span-2">支持的推理档位<input id="edit-levels" placeholder="继承模板" autocomplete="off"><small>用逗号分隔，例如 low, medium, high。默认档位必须在其中。</small></label>
+          <label class="span-2">输入类型<input id="edit-modalities" placeholder="继承模板" autocomplete="off"><small>用逗号分隔，例如 text, image。</small></label>
+        </div>
+        <label class="checkbox-label enabled-label"><input id="edit-enabled" type="checkbox" checked><span>启用此模型<small>启用后加入合并目录；停用后仍保留自定义配置。</small></span></label>
+        <details class="advanced"><summary><span data-icon="code"></span>高级 JSON <span class="muted">编辑覆盖字段</span></summary><p class="muted">与上方表单同步。对象按字段合并，数组整体替换；删除字段即可恢复继承。模型 ID 在上方单独编辑。</p><textarea id="edit-json" class="code-editor" spellcheck="false" aria-label="高级 JSON 覆盖字段"></textarea></details>
+        <div id="editor-error" class="notice error" role="alert" hidden></div>
+        <details id="resolved-details" class="advanced" hidden><summary>解析后的完整模型</summary><pre id="resolved-json" class="json-output"></pre></details>
+      </div>
+      <div class="dialog-footer"><span id="editor-save-hint">保存仅更新本工具的自定义配置</span><div><button id="editor-preview" type="button" class="button">检查合并结果</button><button id="editor-cancel" type="button" class="button">取消</button><button id="editor-save" type="submit" class="button primary">保存模型</button></div></div>
+    </form>
+  </dialog>
+
+  <dialog id="detail-dialog" class="detail-dialog" aria-labelledby="detail-title"><div class="dialog-header"><div><div class="eyebrow">MODEL METADATA</div><h2 id="detail-title">模型详情</h2></div><button class="icon-button" id="detail-close" aria-label="关闭详情"><span data-icon="close"></span></button></div><div class="dialog-body"><pre id="detail-json" class="json-output"></pre></div><div class="dialog-footer"><span>完整保留 Codex 所需元数据</span><button id="detail-copy" class="button">复制 JSON</button></div></dialog>
+
+  <dialog id="confirm-dialog" class="confirm-dialog" aria-labelledby="confirm-title"><div class="dialog-header"><h2 id="confirm-title"></h2></div><div class="dialog-body"><p id="confirm-message"></p><pre id="confirm-details"></pre></div><div class="dialog-footer"><button id="confirm-cancel" class="button">取消</button><button id="confirm-ok" class="button primary">确认</button></div></dialog>
+  <div id="toast" class="toast" role="status" hidden></div>
+</body>
+</html>
