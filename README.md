@@ -1,4 +1,3 @@
-# 纯vibecoding项目
 # Codex 模型管理器
 
 一个独立的中文 Windows 桌面应用：读取 Codex 官方内置模型目录，维护自定义模型，合并并让 Codex 加载。运行时无需浏览器，也无需安装 Node.js。
